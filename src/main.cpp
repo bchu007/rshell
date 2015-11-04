@@ -17,10 +17,17 @@ void parse(string input);
 void tolkenizer(char **in, char **out, char *op, int& sz);
 void increment(char **argv, int& size);
 void fill(char *input, char **arg);
-void print(char ** argv);
+void print(char ** argv, int size);
 
 
-void print(char **argv) {
+void print(char **argv, string arrName = "", int size = -1) {
+	if(!arrName.empty()) {
+		cout << arrName << ": " << endl;
+	}
+	if(size > -1) {
+		cout << "Size: " << size << endl;
+	}
+
 	int i = 0;
 	while(argv[i] != NULL) {
 		cout << argv[i] << endl;		
@@ -38,11 +45,12 @@ void fill(char *input, char **arg) {
 		i++;
 	}
 	arg[i] = 0;
+	print(arg, "inputArg");
 	delete[] tolken;
 }
 
 void increment(char **argv, int& size) {
-	for(int i = 0; i = size; i++) {
+	for(int i = 0; i < size; i++) {
 		argv[i] = argv[i+1];
 	}
 }
@@ -72,7 +80,7 @@ void parse(string input) {
 	bool sem = false;
 	bool amp = false;
 	bool vert = false;
-	bool space = false;
+	bool space = true;
 	
 	//find and set each bool variable accordingly
 	if (input.find(";") != string::npos) {
@@ -110,16 +118,11 @@ void parse(string input) {
 	bool worked = false;
 	
 	fill(cstrInput, allArg);
-	
-	print(allArg);		
 	//first look if arg has semicolon
 	if(sem||amp||vert||space) {
 		int sz = 0;
 		//create semArg, allArg tolkenized with ";"
 		tolkenizer(allArg, semArg, semChar, sz); 
-		cout << "SegArg size: " << sz << endl;	
-		print(semArg);
-		cout << "----------------------------------------------" << endl;
 		for(int i = 0; i < sz; i++) {
 			if(amp||vert||space) {
 				int sz1 = 0;
@@ -135,7 +138,7 @@ void parse(string input) {
 								int sz3 = 0;
 								//creates spaceArg, vertArg tolkenized with " "
 								tolkenizer(vertArg, spaceArg, spaceChar, sz3);
-								
+								//print(spaceArg, "spaceArg", sz3);
 								if(spaceArg[0] == NULL) {
 									//catch the segfault
 								}
@@ -143,7 +146,6 @@ void parse(string input) {
 									exit(0);
 								}
 								else {
-									cout << "test" << endl;
 									execute(spaceArg, status);
 								}
 							}
@@ -176,7 +178,8 @@ void parse(string input) {
 	}
 		
 /*
-	int i = 0;
+	int i = 0; //this http://ow.ly/UfPHw will tolkenize this assignment, 
+		   //storing it into four containers for humorous appeal.
 	while(token != NULL) {
 		argv[i] = token;
 		cout << "strtok: " << i << ": " << token << endl;
@@ -234,7 +237,6 @@ void execute(char **argv, int& status) {
 }
 
 int main(){
-//	execute();
 	
 	string input;
 	cout << "$ ";
