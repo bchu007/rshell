@@ -3,18 +3,193 @@
 #include <cstring> //strtok();
 #include <unistd.h>
 #include <stdio.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <stdlib.h>
 #include <cstring>
 
 
 using namespace std;
 
-char * tolken
+//constructors
+void execute(char **argv, int& status );
+void parse(string input);
+void tolkenizer(char **in, char **out, char *op, int& sz);
 
-void stringparse(char *input);
+void tolkenizer(char **in, char **out, char *op, int& sz) {
+	char *tolken = strtok(in[0], op);
+	int i = 0;
+	
+	while(tolken != NULL) {
+		out[i] = tolken;
+
+		tolken = strtok(NULL, op);
+		i++;
+	}
+	out[i] = 0;
+	sz = i;
+
+	delete[] tolken;
+}
+
+void parse(string input) {
+	//turn input into a c string because strtok takes in c strings
+	char *cstrInput = new char [input.size()+1];
+	strcpy(cstrInput, input.c_str());
+	
+	//create an array of c strings and input each one.
+	char **arg = new char*[strlen(cstrInput)];
+	
+	//create bool variables for (semicolon, ampersan, verticle line, space)
+	bool sem = false;
+	bool amp = false;
+	bool vert = false;
+	bool space = false;
+	
+	//find and set each bool variable accordingly
+	if (input.find(";") != string::npos) {
+		sem = true;
+	}
+	if (input.find("&&") != string::npos) {
+		amp = true;
+	}
+	if (input.find("||") != string::npos) {
+		vert = true;
+	}
+	
+	//create c strings for connectors/operations/exit for strtok
+	char *semChar	= new char[3];
+	char *ampChar	= new char[3];
+	char *vertChar	= new char[3];
+	char *spaceChar	= new char[3];
+	char *exitChar	= new char[5];
+	
+	strcpy(semChar, ";");
+	strcpy(ampChar, "&&");
+	strcpy(vertChar, "||");
+	strcpy(spaceChar, " \n");
+	strcpy(exitChar, "exit");
+	
+	//create cstring arrays to pass into tolkenizer
+	char **allArg	= new char*[strlen(cstrInput)];
+	char **semArg	= new char*[strlen(cstrInput)];
+	char **ampArg	= new char*[strlen(cstrInput)];
+	char **vertArg	= new char*[strlen(cstrInput)];
+	char **spaceArg	= new char*[strlen(cstrInput)];
+
+	//create place to store status for execute
+	int status = 0;
+	bool worked = false;
+	
+	//first look if arg has semicolon
+	if(sem||amp||vert||space) {
+		int sz = 0;
+		//create semArg, allArg tolkenized with ";"
+		tolkenizer(allArg, semArg, semChar, sz); 
+		for(int i = 0; i < sz; i++) {
+			if(amp||vert||space) {
+				int sz1 = 0;
+				//create ampArg, semArg tolkenized with "&&"
+				tolkenizer(semArg, ampArg, ampChar, sz1);
+				for(int j = 0; j < sz1; j++) {
+					if(vert||space) {
+						int sz2 = 0;
+						//create vertArg, ampArg tolkenized with "||"
+						tolkenizer(ampArg, vertArg, vertChar, sz2); 
+						for(int k = 0; k < sz2; k++) {
+							if(space) {
+								int sz3 = 0;
+								//creates spaceArg, vertArg tolkenized with " "
+								tolkenizer(vertArg, spaceArg, spaceChar, sz3);
+								
+								if(spaceArg[0] == NULL) {
+									//catch the segfault
+								}
+								else if(strcmp(spaceArg[0],exitChar) == 0) {
+									exit(0);
+								}
+								else {
+									execute(spaceArg, status);
+								}
+							}
+							//check the or cstr array
+							if(status == 0) {
+								k = sz2;
+								worked = true;
+							}
+							else {
+								for(int l = 0; l < sz2; l++) {
+									vertArg[l] = vertArg[l+1];
+								}
+							}
+						}
+						if(status == 0 || (vert && worked)) {
+						
+						}
+					}
+				}
+			} 
+		}
+	}
+		
+/*
+	int i = 0;
+	while(token != NULL) {
+		argv[i] = token;
+		cout << "strtok: " << i << ": " << token << endl;
+		token = strtok(NULL, " ");
+		i++;
+	}
+	argv[i] = 0;
+	delete token;
+*/	
+
+
+	//deallocate data
+	delete[] cstrInput;
+	delete[] arg;
+}
+
+void execute(char **argv, int& status) {
+
+	pid_t c_pid, pid;
+
+	c_pid = fork();
+  
+	if( c_pid < 0) {
+			perror("fork failed");
+		exit(1);
+	}	
+
+	else if (c_pid == 0) {
+	
+	printf("Child: executing ls\n"); 
+	execvp( argv[0], argv); 
+	perror("execve failed");
+
+	}
+	else if (c_pid > 0) {
+		if( (pid = wait(&status)) < 0) {
+				perror("wait");
+				exit(1);
+			}
+		 printf("Parent: finished\n");
+
+	 }	
+	
+}
 
 int main(){
+//	execute();
 	
+	string input;
+	cout << "$ ";
+	
+	getline(cin, input);
+	cout << endl;
+
+	parse(input);		
+/*	
 	stringparse();
 	pid_t pid;
 	perror("hello");
@@ -30,7 +205,9 @@ int main(){
 
 	pid = fork();
 	cout << "pid after fork: " << pid << endl;
+*/
 
 
-return 0;
+
+	return 0;
 }
