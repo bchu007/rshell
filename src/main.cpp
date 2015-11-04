@@ -15,8 +15,39 @@ using namespace std;
 void execute(char **argv, int& status );
 void parse(string input);
 void tolkenizer(char **in, char **out, char *op, int& sz);
+void increment(char **argv, int& size);
+void fill(char *input, char **arg);
+void print(char ** argv);
 
-void tolkenizer(char **in, char **out, char *op, int& sz) {
+
+void print(char **argv) {
+	int i = 0;
+	while(argv[i] != NULL) {
+		cout << argv[i] << endl;		
+		i++;
+	}
+}
+
+void fill(char *input, char **arg) {
+	char *tolken = strtok(input, "");
+	int i = 0;
+
+	while(tolken != NULL) {
+		arg[i] = tolken;
+		tolken = strtok(NULL, "");
+		i++;
+	}
+	arg[i] = 0;
+	delete[] tolken;
+}
+
+void increment(char **argv, int& size) {
+	for(int i = 0; i = size; i++) {
+		argv[i] = argv[i+1];
+	}
+}
+
+void tolkenizer(char **in , char **out, char *op, int& sz) {
 	char *tolken = strtok(in[0], op);
 	int i = 0;
 	
@@ -36,9 +67,6 @@ void parse(string input) {
 	//turn input into a c string because strtok takes in c strings
 	char *cstrInput = new char [input.size()+1];
 	strcpy(cstrInput, input.c_str());
-	
-	//create an array of c strings and input each one.
-	char **arg = new char*[strlen(cstrInput)];
 	
 	//create bool variables for (semicolon, ampersan, verticle line, space)
 	bool sem = false;
@@ -81,11 +109,17 @@ void parse(string input) {
 	int status = 0;
 	bool worked = false;
 	
+	fill(cstrInput, allArg);
+	
+	print(allArg);		
 	//first look if arg has semicolon
 	if(sem||amp||vert||space) {
 		int sz = 0;
 		//create semArg, allArg tolkenized with ";"
 		tolkenizer(allArg, semArg, semChar, sz); 
+		cout << "SegArg size: " << sz << endl;	
+		print(semArg);
+		cout << "----------------------------------------------" << endl;
 		for(int i = 0; i < sz; i++) {
 			if(amp||vert||space) {
 				int sz1 = 0;
@@ -109,6 +143,7 @@ void parse(string input) {
 									exit(0);
 								}
 								else {
+									cout << "test" << endl;
 									execute(spaceArg, status);
 								}
 							}
@@ -118,17 +153,25 @@ void parse(string input) {
 								worked = true;
 							}
 							else {
-								for(int l = 0; l < sz2; l++) {
-									vertArg[l] = vertArg[l+1];
-								}
+								increment(vertArg, sz2);
 							}
 						}
-						if(status == 0 || (vert && worked)) {
 						
-						}
+					}
+					if(status == 0 || (vert && worked)) {
+						increment(ampArg, sz1);
+						status = 42;
+					}
+					else {
+						char *terminate = new char[1];
+						strcpy(terminate, "");
+						ampArg[0] = terminate;
+						delete []terminate;
+
 					}
 				}
-			} 
+			}
+			increment(semArg, sz); 
 		}
 	}
 		
@@ -147,7 +190,18 @@ void parse(string input) {
 
 	//deallocate data
 	delete[] cstrInput;
-	delete[] arg;
+	delete[] semChar;
+	delete[] ampChar;
+	delete[] vertChar;
+	delete[] spaceChar;
+	delete[] exitChar;
+	delete[] allArg;
+	delete[] semArg;
+	delete[] ampArg;
+	delete[] vertArg;
+	delete[] spaceArg;
+ 
+	
 }
 
 void execute(char **argv, int& status) {
