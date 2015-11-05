@@ -18,24 +18,24 @@ void tolkenizer(char **in, char **out, char *op, int& sz);
 void increment(char **argv, int& size);
 void fill(char *input, char **arg);
 void print(char ** argv, int size);
-
+void promptGet(string& input);
 
 void print(char **argv, string arrName = "", int size = -1) {
-	if(!arrName.empty()) {
+	if(!arrName.empty()) {//checks to see if arrName is empty
 		cout << arrName << ": " << endl;
 	}
-	if(size > -1) {
+	if(size > -1) {//check to see if size was inputted
 		cout << "Size: " << size << endl;
 	}
 
 	int i = 0;
-	while(argv[i] != NULL) {
+	while(argv[i] != NULL) {//print array
 		cout << argv[i] << endl;		
 		i++;
 	}
-}
+}//used for testing code for errors.
 
-void fill(char *input, char **arg) {
+void fill(char *input, char **arg) {//populate the arg with tolkenizd input
 	char *tolken = strtok(input, "");
 	int i = 0;
 
@@ -44,12 +44,12 @@ void fill(char *input, char **arg) {
 		tolken = strtok(NULL, "");
 		i++;
 	}
-	arg[i] = 0;
-	print(arg, "inputArg");
+	arg[i] = 0;//end the cstr array
+	//print(arg, "inputArg");
 	delete[] tolken;
 }
 
-void increment(char **argv, int& size) {
+void increment(char **argv, int& size) {//increment each array value with the next 
 	for(int i = 0; i < size; i++) {
 		argv[i] = argv[i+1];
 	}
@@ -69,9 +69,13 @@ void tolkenizer(char **in , char **out, char *op, int& sz) {
 	sz = i;
 
 	delete[] tolken;
-}
+}//takes **in and tolkenizes it into **out using *op as the delimiter.
 
 void parse(string input) {
+	//remove comments
+	if(input.find("#") != string::npos) {
+		input.resize(input.find("#"));
+	}
 	//turn input into a c string because strtok takes in c strings
 	char *cstrInput = new char [input.size()+1];
 	strcpy(cstrInput, input.c_str());
@@ -125,7 +129,7 @@ void parse(string input) {
 		tolkenizer(allArg, semArg, semChar, sz); 
 		for(int i = 0; i < sz; i++) {
 			if(amp||vert||space) {
-				int sz1 = 0;
+				int sz1 = 0; //create ampArg, semArg tolkenized with "&&"
 				//create ampArg, semArg tolkenized with "&&"
 				tolkenizer(semArg, ampArg, ampChar, sz1);
 				for(int j = 0; j < sz1; j++) {
@@ -150,21 +154,21 @@ void parse(string input) {
 								}
 							}
 							//check the or cstr array
-							if(status == 0) {
+							if(status == 0) {//check to see if execute worked
 								k = sz2;
 								worked = true;
 							}
-							else {
+							else {//increment the next or
 								increment(vertArg, sz2);
 							}
 						}
 						
 					}
-					if(status == 0 || (vert && worked)) {
+					if(status == 0 || (vert && worked)) { //checks to see if previous worked
 						increment(ampArg, sz1);
 						status = 42;
 					}
-					else {
+					else {//if it didn't work, dont do the following and
 						char *terminate = new char[1];
 						strcpy(terminate, "");
 						ampArg[0] = terminate;
@@ -173,23 +177,11 @@ void parse(string input) {
 					}
 				}
 			}
+			//do the next ;
 			increment(semArg, sz); 
 		}
 	}
 		
-/*
-	int i = 0; //this http://ow.ly/UfPHw will tolkenize this assignment, 
-		   //storing it into four containers for humorous appeal.
-	while(token != NULL) {
-		argv[i] = token;
-		cout << "strtok: " << i << ": " << token << endl;
-		token = strtok(NULL, " ");
-		i++;
-	}
-	argv[i] = 0;
-	delete token;
-*/	
-
 
 	//deallocate data
 	delete[] cstrInput;
@@ -213,57 +205,44 @@ void execute(char **argv, int& status) {
 
 	c_pid = fork();
   
-	if( c_pid < 0) {
-			perror("fork failed");
+	if( c_pid < 0) {//error with forking
+		perror("fork failed");
 		exit(1);
 	}	
 
-	else if (c_pid == 0) {
+	else if (c_pid == 0) {//if child works
 	
-	printf("Child: executing ls\n"); 
-	execvp( argv[0], argv); 
+	//printf("Child: executing ls\n"); 
+	execvp( argv[0], argv); //exeute 
 	perror("execve failed");
 
 	}
-	else if (c_pid > 0) {
-		if( (pid = wait(&status)) < 0) {
-				perror("wait");
-				exit(1);
-			}
-		 printf("Parent: finished\n");
-
-	 }	
+	else if (c_pid > 0) {//parent process runs
+		if( (pid = wait(&status)) < 0) {//check to see if wait fails
+			perror("wait");//if it does, exit
+			exit(1);
+		}
+	//printf("Parent: finished\n");
+	}
+	
+}
+void  promptGet(string& input) {
+	cout << "$ ";
+	getline(cin, input);
 	
 }
 
 int main(){
-	
 	string input;
-	cout << "$ ";
-	
-	getline(cin, input);
-	cout << endl;
-
-	parse(input);		
-/*	
-	stringparse();
-	pid_t pid;
-	perror("hello");
-	if(pid == -1) {
-	//somthing went wrong with the forking.
-		perror("fork");
-		exit(1);
-	}
-	cout << "pid before fork: " << pid << endl;
-
-	int x = 0;
-	bool f = false;
-
-	pid = fork();
-	cout << "pid after fork: " << pid << endl;
-*/
-
-
-
+	promptGet(input);		
+	parse(input);
+	//parse(get_input());		
 	return 0;
 }
+
+
+
+
+
+
+
