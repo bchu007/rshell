@@ -22,6 +22,7 @@ $ bin/rshell
 reads in command on one line, with the form:
 
 > cmd = executable [argument list] [connector cmd]
+
 > connector = || or && or ;
 
 ##Documentation
