@@ -33,7 +33,7 @@ reads in command on one line, with the form:
 
 ##Licence
 [[Back to Top]](#table-of-contents)
-[GNU LICENCE V3](rshell/LICENCE.md)
+[GNU public licence v3](LICENCE.md)
 
 
 ##Authors
